@@ -34,7 +34,7 @@ jobs:
           echo "Waiting for services to be ready..."
           sleep 30
 
-      - name: Test (Singularity lolcow)
+      - name: Test submit job
         run: make test
 
       - name: Stop container
