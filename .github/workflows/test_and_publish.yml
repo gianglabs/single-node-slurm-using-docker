@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: PROD
     permissions:
       contents: read
 
