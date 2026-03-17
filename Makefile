@@ -13,4 +13,4 @@ start: dev
 	docker run --rm --name slurm-dev -p 8081:22 --privileged -d ${IMAGE}
 
 test:
-	docker exec -u river slurm-dev /home/river/.pixi/bin/singularity run library://sylabsed/examples/lolcow
+	docker exec -u river -w /home/river slurm-dev /home/river/.pixi/bin/singularity run library://sylabsed/examples/lolcow
