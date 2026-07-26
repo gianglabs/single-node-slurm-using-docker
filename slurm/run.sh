@@ -8,11 +8,11 @@ sysctl -w kernel.unprivileged_userns_clone=1 || true
 cpus=${1:-2} 
 memory=${2:-2048}
 
-sed -e "s/<<CPUS>>/$cpus/g" -e "s/<<MEMORY>>/$memory/g" /etc/slurm-llnl/slurm.conf.template > /etc/slurm-llnl/slurm.conf
-cat /etc/slurm-llnl/slurm.conf |grep NodeName
+sed -e "s/<<CPUS>>/$cpus/g" -e "s/<<MEMORY>>/$memory/g" /etc/slurm/slurm.conf.template > /etc/slurm/slurm.conf
+cat /etc/slurm/slurm.conf |grep NodeName
 # Start required services
 # slurmdbd
-service mysql start
+service mariadb start
 mysql -e "CREATE DATABASE IF NOT EXISTS slurm_acct_db;" && \
 mysql -e "CREATE USER IF NOT EXISTS 'slurm'@'localhost' IDENTIFIED BY 'slurm';" && \
 mysql -e "GRANT ALL PRIVILEGES ON slurm_acct_db.* TO 'slurm'@'localhost';" && \
