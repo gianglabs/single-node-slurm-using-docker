@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install necessary packages
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     munge slurm-wlm slurm-wlm-basic-plugins slurmdbd \
     mariadb-server mariadb-client \
     build-essential vim curl wget git \
-    openssh-server fuse net-tools \
+    openssh-server fuse3 net-tools \
     python3 python3-dev python3-pip python3-venv \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -30,13 +30,14 @@ USER root
 RUN mkdir -p /run/sshd /etc/munge /var/log/munge /var/lib/munge /etc/slurm /var/spool/slurmd \
     && chown -R munge:munge /etc/munge /var/log/munge /var/lib/munge \
     && chmod 0700 /etc/munge /var/log/munge /var/lib/munge \
-    && /usr/sbin/create-munge-key \
-    && mkdir -p /var/log/slurm /var/run/mysqld \
-    && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
+    && mkdir -p /var/log/slurm /var/run/mysqld /var/lib/slurm-llnl/slurmd /var/lib/slurm-llnl/slurmctld \
+    && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
+    && chown -R slurm:slurm /var/lib/slurm-llnl /var/log/slurm /var/spool/slurmd
 
 # Copy configuration files
-COPY slurm.conf.template /etc/slurm-llnl/slurm.conf.template
-COPY slurmdbd.conf /etc/slurm-llnl/slurmdbd.conf
+COPY slurm.conf.template /etc/slurm/slurm.conf.template
+COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
+RUN chmod 600 /etc/slurm/slurmdbd.conf && chown slurm:slurm /etc/slurm/slurmdbd.conf
 COPY my.cnf /etc/mysql/my.cnf
 
 # Modify system user slurm
