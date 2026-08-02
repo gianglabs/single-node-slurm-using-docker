@@ -10,7 +10,7 @@ publish: dev
 	docker push $(IMAGE)
 
 start: dev
-	docker run --rm --name slurm-dev -p 8081:22 --privileged -d ${IMAGE}
+	docker run --rm --name slurm-dev --network host  --privileged -d ${IMAGE}
 
 test:
 	docker exec -u river -w /home/river slurm-dev sbatch --wrap="echo Hello"

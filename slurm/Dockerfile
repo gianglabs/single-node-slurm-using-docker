@@ -45,5 +45,5 @@ RUN usermod -s /bin/bash slurm
 COPY run.sh /opt
 
 # Expose necessary ports
-EXPOSE 22 6817 6818 3306
+EXPOSE 2222 6917 6918 6919 3307
 CMD ["/opt/run.sh"]
