@@ -1,4 +1,4 @@
-VERSION :=1.3.0
+VERSION :=1.2.0
 DOCKERFILE := ./slurm/Dockerfile
 IMAGE := nttg8100/river-slurm:$(VERSION)
 
@@ -10,7 +10,7 @@ publish: dev
 	docker push $(IMAGE)
 
 start: dev
-	docker run --rm --name slurm-dev --network host --privileged -d ${IMAGE}
+	docker run --rm --name slurm-dev --network hostrun  --privileged -d ${IMAGE}
 
 test:
 	docker exec -u river -w /home/river slurm-dev sbatch --wrap="echo Hello"
