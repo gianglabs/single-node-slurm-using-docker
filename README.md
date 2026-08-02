@@ -26,11 +26,11 @@ All SLURM daemons run on a single container:
 make start
 ```
 
-This builds the image and runs the container with `--privileged` (required for Singularity user namespaces).
+This builds the image and runs the container with `--network host --privileged` (host networking shares the host's ports, so the container's services are moved to non-conflicting ports; `--privileged` is required for Singularity user namespaces).
 
 **SSH into the cluster:**
 ```bash
-ssh river@localhost -p 8081
+ssh river@localhost -p 2222
 ```
 
 Default password: `password`
@@ -56,12 +56,15 @@ singularity run library://sylabsed/examples/lolcow
 
 ## Ports
 
+The container runs with `--network host`, so it shares the host's network namespace. To avoid clashing with services running directly on the host (host Slurm uses 6817-6819, sshd uses 22, MySQL uses 3306), all service ports are moved to non-conflicting ports:
+
 | Port | Service |
 |---|---|
-| 8081 | SSH (mapped from container port 22) |
-| 6817 | slurmctld |
-| 6818 | slurmd |
-| 3306 | MariaDB |
+| 2222 | SSH (host sshd uses 22) |
+| 6917 | slurmctld |
+| 6918 | slurmd |
+| 6919 | slurmdbd |
+| 3307 | MariaDB |
 
 ## CI/CD
 

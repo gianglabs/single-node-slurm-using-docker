@@ -21,8 +21,8 @@ service slurmdbd start
 # slurmcltd
 /etc/init.d/munge start
 service slurmctld start
-# ssh
-/usr/sbin/sshd
+# ssh (on port 2222 to avoid clashing with host sshd)
+/usr/sbin/sshd -p 2222
 # Wait for services to stabilize
 sleep 10
 # Configure SLURM accounts
