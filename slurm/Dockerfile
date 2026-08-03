@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     munge slurm-wlm slurm-wlm-basic-plugins slurmdbd \
     mariadb-server mariadb-client \
     build-essential vim curl wget git \
-    openssh-server fuse3 net-tools \
+    openssh-server fuse3 fuse2fs net-tools \
     python3 python3-dev python3-pip python3-venv \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
