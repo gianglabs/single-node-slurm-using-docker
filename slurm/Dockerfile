@@ -34,11 +34,10 @@ RUN mkdir -p /run/sshd /etc/munge /var/log/munge /var/lib/munge /etc/slurm /var/
     && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
     && chown -R slurm:slurm /var/lib/slurm-llnl /var/log/slurm /var/spool/slurmd
 
-# Copy configuration files
+# Copy configuration templates
 COPY slurm.conf.template /etc/slurm/slurm.conf.template
-COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
-RUN chmod 600 /etc/slurm/slurmdbd.conf && chown slurm:slurm /etc/slurm/slurmdbd.conf
-COPY my.cnf /etc/mysql/my.cnf
+COPY slurmdbd.conf.template /etc/slurm/slurmdbd.conf.template
+COPY my.cnf.template /etc/mysql/my.cnf.template
 
 # Modify system user slurm
 RUN usermod -s /bin/bash slurm

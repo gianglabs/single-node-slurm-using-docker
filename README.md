@@ -66,6 +66,30 @@ The container runs with `--network host`, so it shares the host's network namesp
 | 6919 | slurmdbd |
 | 3307 | MariaDB |
 
+### Running multiple concurrent instances
+
+`run.sh` accepts an optional third argument — a **port offset** added to every service port.
+This allows several SLURM containers to run side by side on the shared host network.
+
+| Service | Base port | With offset N |
+|---|---|---|
+| sshd | 2222 | 2222 + N |
+| slurmctld | 6917 | 6917 + N |
+| slurmd | 6918 | 6918 + N |
+| slurmdbd | 6919 | 6919 + N |
+| MariaDB | 3307 | 3307 + N |
+
+(munge needs no offset — it binds a per-container Unix socket, not a host TCP port.)
+
+Override the resources and offset at runtime:
+
+```bash
+docker run --rm --name slurm-0 --network host --privileged -d nttg8100/river-slurm:<VERSION>
+docker run --rm --name slurm-1 --network host --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 2 2048 100
+```
+
+Each instance gets a unique port range (e.g. offset `0` → SSH on 2222, offset `100` → SSH on 2322).
+
 ## CI/CD
 
 The GitHub Actions workflow (`.github/workflows/test_and_publish.yml`) runs automatically:

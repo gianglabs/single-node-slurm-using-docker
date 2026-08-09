@@ -22,9 +22,9 @@ This document covers everything needed to build, modify, test, and publish the `
 └── slurm/
     ├── Dockerfile
     ├── run.sh                # container entrypoint
-    ├── slurm.conf.template   # SLURM config (<<CPUS>> and <<MEMORY>> are substituted at runtime)
-    ├── slurmdbd.conf         # SLURM accounting daemon config
-    ├── my.cnf                # MariaDB config
+    ├── slurm.conf.template   # SLURM config (<<CPUS>>, <<MEMORY>> and port placeholders are substituted at runtime)
+    ├── slurmdbd.conf.template   # SLURM accounting daemon config template
+    ├── my.cnf.template       # MariaDB config template
     └── .ssh/
         └── id_rsa.pub        # public key copied into the container for SSH access
 ```
@@ -75,17 +75,25 @@ docker stop slurm-dev
 
 ### SLURM node resources
 
-CPU count and memory are injected at container startup via `run.sh` using `slurm.conf.template`. The defaults are:
+CPU count, memory, and port offset are injected at container startup via `run.sh` using the
+`*.template` configs. The defaults are:
 
 | Parameter | Default |
 |---|---|
 | CPUs | `2` |
 | Memory (MB) | `2048` |
+| Offset | `0` |
 
 Override at runtime:
 
 ```bash
 docker run --rm --name slurm-dev -p 8081:22 --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 4 4096
+```
+
+Run a second concurrent instance with a port offset (see the offset port table in `README.md`):
+
+```bash
+docker run --rm --name slurm-dev-2 -p 8122:22 --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 2 2048 100
 ```
 
 ### SSH key
@@ -114,7 +122,7 @@ Key sections to be aware of:
 The image version is defined at the top of `Makefile`:
 
 ```makefile
-VERSION := 1.1.0
+VERSION := 1.4.0
 ```
 
 Update this before publishing a new release. The CI workflow reads this value automatically.

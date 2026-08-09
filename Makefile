@@ -1,4 +1,4 @@
-VERSION :=1.3.0
+VERSION :=1.4.0
 DOCKERFILE := ./slurm/Dockerfile
 IMAGE := nttg8100/river-slurm:$(VERSION)
 
