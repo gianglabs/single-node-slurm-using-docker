@@ -1,0 +1,4 @@
+[mysqld]
+port=<<MYSQL_PORT>>
+innodb_buffer_pool_size=512M
+innodb_lock_wait_timeout=900
