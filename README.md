@@ -8,9 +8,9 @@ All SLURM daemons run on a single container:
 
 - `slurmctld` — cluster controller
 - `slurmd` — compute node
-- `slurmdbd` — accounting daemon (backed by MariaDB)
+- `slurmdbd` — accounting daemon (backed by MariaDB, optional)
 - `munge` — authentication
-- `sshd` — SSH access on port 22 (mapped to 8081)
+- `sshd` — SSH access (optional)
 - `singularity` — container runtime for HPC jobs (installed via pixi as user `river`)
 
 ## Requirements
@@ -21,9 +21,14 @@ All SLURM daemons run on a single container:
 
 ## Quickstart
 
-**Build and start:**
+**Build and start (full mode with accounting + sshd):**
 ```bash
 make start
+```
+
+**Build and start (minimal mode, no accounting or sshd):**
+```bash
+make start-minimal
 ```
 
 This builds the image and runs the container with `--network host --privileged` (host networking shares the host's ports, so the container's services are moved to non-conflicting ports; `--privileged` is required for Singularity user namespaces).
@@ -50,9 +55,26 @@ singularity run library://sylabsed/examples/lolcow
 | Target | Description |
 |---|---|
 | `make dev` | Build the Docker image |
-| `make start` | Build and run the container |
-| `make test` | Run Singularity smoke test inside the running container |
+| `make start` | Build and run the container (full mode) |
+| `make start-minimal` | Build and run the container (minimal mode: no accounting, no sshd) |
+| `make test` | Submit a job and verify accounting via `sacct` |
+| `make test-minimal` | Submit a job, verify no slurmdbd/sshd running |
 | `make publish` | Build and push the image to Docker Hub |
+
+## Modes
+
+### Full mode (default)
+
+Includes MariaDB, slurmdbd (job accounting), and sshd. Jobs are tracked in the accounting database and can be queried with `sacct`.
+
+### Minimal mode
+
+No MariaDB, slurmdbd, or sshd. Uses `AccountingStorageType=accounting_storage/none`. Lighter weight, suitable for basic job scheduling without accounting.
+
+Start with:
+```bash
+make start-minimal
+```
 
 ## Ports
 
@@ -94,7 +116,7 @@ Each instance gets a unique port range (e.g. offset `0` → SSH on 2222, offset 
 
 The GitHub Actions workflow (`.github/workflows/test_and_publish.yml`) runs automatically:
 
-- **On pull request to `main`**: builds the image and runs the Singularity smoke test
+- **On pull request to `main`**: builds the image, runs the full test (sacct accounting verification), then runs the minimal test (no accounting/sshd)
 - **On push to `main`**: builds, tests, then publishes to Docker Hub as `nttg8100/river-slurm:<version>`
 
 The version is read from `VERSION` in the `Makefile`.

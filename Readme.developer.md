@@ -41,29 +41,45 @@ Runs `docker build slurm -t nttg8100/river-slurm:<VERSION>`.
 
 ### 2. Start the container
 
+**Full mode (with accounting + sshd):**
 ```bash
 make start
 ```
 
-Runs the container with `--privileged` (required so `sysctl kernel.unprivileged_userns_clone=1` can be set at startup for Singularity). The container is named `slurm-dev` and SSH is exposed on port `8081`.
+**Minimal mode (no accounting, no sshd):**
+```bash
+make start-minimal
+```
+
+Runs the container with `--privileged` (required so `sysctl kernel.unprivileged_userns_clone=1` can be set at startup for Singularity). The container is named `slurm-dev`.
 
 ### 3. SSH into the container
 
 ```bash
-ssh river@localhost -p 8081
+ssh river@localhost -p 2222
 ```
 
 Default password: `password`. Alternatively use the key from `slurm/.ssh/id_rsa`.
 
+> Not available in minimal mode (`ENABLE_SSHD=false`).
+
 ### 4. Run the smoke test
 
-With the container running (`make start`), run:
+With the container running, run:
 
+**Full mode — verifies accounting (sacct):**
 ```bash
 make test
 ```
 
-This executes `singularity run library://sylabsed/examples/lolcow` as user `river` inside the container. A successful run confirms Singularity, user namespaces, and network access are all working.
+Submits a batch job, waits for completion, then runs `sacct -j <jobid>` to verify slurmdbd recorded the job.
+
+**Minimal mode — verifies no slurmdbd/sshd:**
+```bash
+make test-minimal
+```
+
+Submits a batch job, verifies it completes, and asserts that `slurmdbd` and `sshd` processes are not running.
 
 ### 5. Stop and clean up
 
@@ -87,13 +103,27 @@ CPU count, memory, and port offset are injected at container startup via `run.sh
 Override at runtime:
 
 ```bash
-docker run --rm --name slurm-dev -p 8081:22 --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 4 4096
+docker run --rm --name slurm-dev --network host --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 4 4096
 ```
 
 Run a second concurrent instance with a port offset (see the offset port table in `README.md`):
 
 ```bash
-docker run --rm --name slurm-dev-2 -p 8122:22 --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 2 2048 100
+docker run --rm --name slurm-dev-2 --network host --privileged -d nttg8100/river-slurm:<VERSION> /opt/run.sh 2 2048 100
+```
+
+### Environment variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `ENABLE_ACCOUNTING` | `true` | Enable MariaDB + slurmdbd job accounting |
+| `ENABLE_SSHD` | `true` | Enable sshd for SSH access |
+
+Example — minimal mode without accounting or sshd:
+```bash
+docker run --rm --name slurm-dev --network host --privileged \
+  -e ENABLE_ACCOUNTING=false -e ENABLE_SSHD=false \
+  -d nttg8100/river-slurm:<VERSION>
 ```
 
 ### SSH key
@@ -122,7 +152,7 @@ Key sections to be aware of:
 The image version is defined at the top of `Makefile`:
 
 ```makefile
-VERSION := 1.4.0
+VERSION := 1.5.0
 ```
 
 Update this before publishing a new release. The CI workflow reads this value automatically.
@@ -144,6 +174,11 @@ act push -s DOCKERHUB_USERNAME=nttg8100 -s DOCKERHUB_TOKEN=<your_token>
 **Run only the build-and-test job:**
 ```bash
 act pull_request -j build-and-test
+```
+
+**Run only the minimal test job:**
+```bash
+act pull_request -j build-and-test-minimal
 ```
 
 If prompted to choose a runner image, select `Medium` or pass explicitly:
